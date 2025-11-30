@@ -1,6 +1,5 @@
-const CACHE_NAME = '0FluffCook-v3-3-cache'; // IMPORTANT: We must bump the cache again!
+const CACHE_NAME = '0FluffCook-v3-4-cache'; // Bumped version here
 
-// List of files to cache (same as before)
 const urlsToCache = [
     './',
     'index.html',
@@ -25,13 +24,10 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-    // CRITICAL FIX: Claim control of the page immediately
     event.waitUntil(self.clients.claim()); 
-
     event.waitUntil(
         caches.keys().then((cacheNames) => Promise.all(
             cacheNames.map((cacheName) => {
-                // If the cache name doesn't match the new one, delete the old cache
                 if (cacheName !== CACHE_NAME) return caches.delete(cacheName);
             })
         ))
