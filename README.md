@@ -4,7 +4,7 @@
 
 A lightweight, privacy-focused recipe extractor powered by Google Gemini. It takes messy URLs or text and converts them into clean, savable recipe cards.
 
-**[🔗 Open the Web App](https://jayancobk.github.io/0FluffCook/)**
+**[🔗 Open the Web App](https://Raw-JSON.github.io/0FluffCook/)**
 
 ---
 
