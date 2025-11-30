@@ -1,4 +1,4 @@
-// 0FluffCook V3.3 Logic - Fixed Extraction
+// 0FluffCook V3.3.2 Logic - Syntax Fix
 
 // --- STATE MANAGEMENT ---
 let recipes = JSON.parse(localStorage.getItem('gourmet_recipes') || '[]');
@@ -45,13 +45,19 @@ async function fetchHTML(targetUrl) {
 // --- CRITICAL FIX: HTML CLEANING UTILITY ---
 function cleanHtmlForAi(html) {
     if (!html) return '';
-    // Remove scripts, styles, comments, and noisy structural tags
+    
+    // 1. Remove scripts, styles, and comments
     let cleaned = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '')
                       .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, '')
-                      .replace(//g, '')
-                      .replace(/<(header|footer|nav|aside|iframe|svg)[^>]*>[\s\S]*?<\/(header|footer|nav|aside|iframe|svg)>/gi, '');
-    // Collapse whitespace
-    return cleaned.replace(/\s\s+/g, ' ').trim();
+                      .replace(//g, ''); // <--- SYNTAX ERROR FIXED HERE
+
+    // 2. Remove common noisy structural tags
+    cleaned = cleaned.replace(/<(header|footer|nav|aside|iframe|svg)[^>]*>[\s\S]*?<\/(header|footer|nav|aside|iframe|svg)>/gi, '');
+
+    // 3. Replace multiple newlines/spaces with a single space
+    cleaned = cleaned.replace(/\s\s+/g, ' ').trim();
+    
+    return cleaned;
 }
 
 // --- MAIN LOGIC (COOK) ---
@@ -74,7 +80,6 @@ async function cook() {
             const htmlContent = await fetchHTML(input);
             
             if (htmlContent) {
-                // APPLY FIX: Clean HTML before feeding to AI
                 const cleanedContent = cleanHtmlForAi(htmlContent);
                 input = "SOURCE HTML: " + cleanedContent.substring(0, 50000);
             } else {
