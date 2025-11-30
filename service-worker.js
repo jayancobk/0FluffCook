@@ -1,4 +1,4 @@
-const CACHE_NAME = '0FluffCook-v3-6-cache'; // <--- UPDATED VERSION
+const CACHE_NAME = '0FluffCook-v3-7-cache'; // <--- BUMPED TO 3.7
 
 const urlsToCache = [
     './',
