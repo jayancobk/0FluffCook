@@ -1,4 +1,4 @@
-const CACHE_NAME = '0FluffCook-v3-1-cache';
+const CACHE_NAME = '0FluffCook-v3-2-cache';
 const urlsToCache = [
     './',
     'index.html',
