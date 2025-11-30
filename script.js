@@ -1,4 +1,4 @@
-// 0FluffCook V3.0 Logic
+// 0FluffCook V3.1 Logic
 
 // --- STATE MANAGEMENT ---
 let recipes = JSON.parse(localStorage.getItem('gourmet_recipes') || '[]');
@@ -113,17 +113,25 @@ async function cook() {
             throw new Error("Failed to parse recipe JSON. AI output was malformed.");
         }
         
+        // --- V3.1 VALIDATION CHECK ---
         if(recipeData.error) {
+            // Case 1: AI explicitly returned an error JSON
             alert("AI Error: " + recipeData.error);
-        } else {
-            // Success
-            recipeData.id = Date.now();
-            recipeData.isFavorite = false;
-            recipes.unshift(recipeData);
-            saveRecipes();
-            render();
-            document.getElementById('rawInput').value = ''; // Clear input
-        }
+            return;
+        } else if (recipeData.ingredients.length === 0 && recipeData.steps.length === 0) {
+            // Case 2: AI returned a structure but it's empty (the bug you found)
+            alert("Extraction Failed: AI couldn't locate any ingredients or steps in that text.");
+            return; // ABORT SAVE
+        } 
+        // --- END V3.1 VALIDATION ---
+        
+        // Success Path (only runs if data is valid and non-empty)
+        recipeData.id = Date.now();
+        recipeData.isFavorite = false;
+        recipes.unshift(recipeData);
+        saveRecipes();
+        render();
+        document.getElementById('rawInput').value = '';
 
     } catch (e) {
         alert("Error: " + e.message);
@@ -287,4 +295,3 @@ function importData(input) {
 function saveRecipes() {
     localStorage.setItem('gourmet_recipes', JSON.stringify(recipes));
 }
-  
