@@ -8,6 +8,12 @@ A lightweight, privacy-focused recipe extractor powered by Google Gemini. It tak
 
 ---
 
+> ⚠️ **SERVICE STATUS UPDATE (Nov 2025): Core Extraction Feature Temporarily Broken**
+>
+> We have identified a critical bug in the main extraction script that is causing a fatal error and may freeze UI elements (Settings, Manual Mode). We apologize for the disruption and are working to deploy an emergency fix immediately. Thank you for your patience as we restore full functionality.
+
+---
+
 ## 🚀 V3.2 Stable Release
 * **Refactored Architecture:** codebase split into HTML, CSS, and JS for better performance and maintainability.
 * **Smart Scraper:** Uses a multi-strategy proxy system (`corsproxy.io` + `allorigins`) to read real website HTML.
