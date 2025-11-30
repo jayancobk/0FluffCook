@@ -8,7 +8,7 @@ A lightweight, privacy-focused recipe extractor powered by Google Gemini. It tak
 
 ---
 
-## 🚀 V3.1 Stable Release
+## 🚀 V3.2 Stable Release
 * **Refactored Architecture:** codebase split into HTML, CSS, and JS for better performance and maintainability.
 * **Smart Scraper:** Uses a multi-strategy proxy system (`corsproxy.io` + `allorigins`) to read real website HTML.
 * **AI Cleaning:** Gemini 2.5 Flash formats ingredients and removes repetitive fluff automatically.
