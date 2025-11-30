@@ -1,4 +1,4 @@
-// 0FluffCook V3.1 Final Logic
+// 0FluffCook Final Logic
 
 // --- STATE MANAGEMENT ---
 let recipes = JSON.parse(localStorage.getItem('gourmet_recipes') || '[]');
@@ -44,6 +44,24 @@ async function fetchHTML(targetUrl) {
     return null; // Both failed
 }
 
+// --- NEW FIX: HTML CLEANING UTILITY ---
+function cleanHtmlForAi(html) {
+    if (!html) return '';
+    
+    // 1. Remove scripts, styles, and comments (most tokens are here)
+    let cleaned = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '');
+    cleaned = cleaned.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, '');
+    cleaned = cleaned.replace(//g, '');
+
+    // 2. Remove common noisy structural tags
+    cleaned = cleaned.replace(/<(header|footer|nav|aside|iframe|svg)[^>]*>[\s\S]*?<\/(header|footer|nav|aside|iframe|svg)>/gi, '');
+
+    // 3. Replace multiple newlines/spaces with a single space
+    cleaned = cleaned.replace(/\s\s+/g, ' ').trim();
+    
+    return cleaned;
+}
+
 // --- MAIN LOGIC (COOK) ---
 async function cook() {
     let input = document.getElementById('rawInput').value.trim();
@@ -65,8 +83,10 @@ async function cook() {
             const htmlContent = await fetchHTML(input);
             
             if (htmlContent) {
+                // APPLY FIX: Clean HTML before feeding to AI
+                const cleanedContent = cleanHtmlForAi(htmlContent);
                 // Limit to ~50k chars
-                input = "SOURCE HTML: " + htmlContent.substring(0, 50000);
+                input = "SOURCE HTML: " + cleanedContent.substring(0, 50000);
             } else {
                 alert("Security Warning: This site blocked our scrapers. AI will attempt to extract based on the URL alone (accuracy may vary).");
             }
