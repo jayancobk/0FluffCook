@@ -8,20 +8,15 @@ A lightweight, privacy-focused utility that extracts ingredients and steps from 
 
 ---
 
-### ⚠️ Current Status: Known Issue
-*The application is fully functional, but please note:*
+## ✅ V3.5 Stable Release: Surgical Extraction Fix
 
-> **URL Extraction Bug:** Due to aggressive website anti-bot protection and noisy HTML, the main **"Extract with AI"** feature may fail or return empty results when using a URL.
->
-> **Workaround:** Copy the ingredients and instructions text from the website and **paste it directly** into the input field. The core AI logic works instantly with text input.
+This release introduces a **surgical fix** for the main extraction feature. We replaced unreliable string manipulation with a native browser **DOMParser** strategy, ensuring the AI receives clean, noise-free input, making URL extraction highly reliable.
 
----
-
-## 🚀 Core Features (V3.4)
+## 🚀 Core Features
 
 * **100% Client-Side:** Zero servers, zero user tracking. All data is saved securely in your browser's local storage.
 * **PWA Ready:** Install the app to your desktop or mobile home screen for an instant-loading, offline-capable experience.
-* **AI Smart Parse:** Uses Gemini 2.5 Flash to intelligently filter noise, format measurements, and structure messy text into clean JSON.
+* **AI Smart Parse:** Uses Gemini 2.5 Flash to intelligently filter noise, format measurements, and structure messy text/URLs into clean JSON.
 * **Full Data Control:** Features include Favorites, Manual Editor, and full Backup/Restore functionality (JSON export).
 * **OLED Aesthetic:** Built with a sleek, dark-mode focused UI.
 
@@ -35,4 +30,3 @@ A lightweight, privacy-focused utility that extracts ingredients and steps from 
 
 ## 📄 License
 MIT License. Open source and free forever.
-
