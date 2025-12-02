@@ -3,12 +3,14 @@
 // --- STATE MANAGEMENT ---
 let recipes = JSON.parse(localStorage.getItem('gourmet_recipes') || '[]');
 let apiKey = localStorage.getItem('gourmet_key') || '';
+let customRules = localStorage.getItem('gourmet_rules') || ''; // NEW STATE VARIABLE
 let currentRecipeId = null;
 let isEditingId = null;
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     if(apiKey) document.getElementById('apiKeyInput').value = apiKey;
+    if(customRules) document.getElementById('customRulesInput').value = customRules; // LOAD RULES
     render();
 });
 
@@ -22,6 +24,12 @@ function saveKey() {
     apiKey = document.getElementById('apiKeyInput').value.trim();
     localStorage.setItem('gourmet_key', apiKey);
     if(apiKey) toggleSettings();
+}
+
+// NEW FUNCTION: Save Custom Rules
+function saveRules() {
+    customRules = document.getElementById('customRulesInput').value.trim();
+    localStorage.setItem('gourmet_rules', customRules);
 }
 
 // --- SCRAPING ENGINE (MULTI-PROXY) ---
@@ -74,7 +82,34 @@ function cleanHtmlForAi(html) {
     return cleanedText;
 }
 
-// --- MAIN LOGIC (COOK) ---
+// --- AI CORE HANDLER (Internal utility) ---
+async function _callGeminiAPI(prompt) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+
+    const data = await response.json();
+    
+    if (!data.candidates || !data.candidates[0].content) {
+        throw new Error("AI returned an empty response. Check API Key or Quota.");
+    }
+
+    const rawText = data.candidates[0].content.parts[0].text;
+    const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    let recipeData;
+    try {
+        recipeData = JSON.parse(jsonStr);
+    } catch (jsonErr) {
+        throw new Error("Failed to parse recipe JSON. AI output was malformed.");
+    }
+    return recipeData;
+}
+
+
+// --- MAIN LOGIC (COOK - EXTRACTION) ---
 async function cook() {
     let input = document.getElementById('rawInput').value.trim();
     if (!input) return alert("Please enter a URL or recipe text first.");
@@ -103,7 +138,7 @@ async function cook() {
             }
         }
 
-        // Phase 2: AI Processing
+        // Phase 2: AI Processing (Extraction Prompt)
         loadingEl.innerText = "AI is cleaning & formatting...";
 
         const prompt = `You are a professional cookbook editor.
@@ -116,27 +151,7 @@ async function cook() {
         
         TEXT TO ANALYZE: ${input}`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-
-        const data = await response.json();
-        
-        if (!data.candidates || !data.candidates[0].content) {
-            throw new Error("AI returned an empty response. Check API Key or Quota.");
-        }
-
-        const rawText = data.candidates[0].content.parts[0].text;
-        const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        
-        let recipeData;
-        try {
-            recipeData = JSON.parse(jsonStr);
-        } catch (jsonErr) {
-            throw new Error("Failed to parse recipe JSON. AI output was malformed.");
-        }
+        const recipeData = await _callGeminiAPI(prompt);
         
         // --- VALIDATION CHECK ---
         if(recipeData.error) {
@@ -162,6 +177,76 @@ async function cook() {
         loadingEl.classList.add('hidden');
     }
 }
+
+
+// --- NEW LOGIC (CHEF MODE - GENERATION) ---
+async function generateRecipe() {
+    const input = document.getElementById('rawInput').value.trim();
+    if (!input) return alert("Please describe the recipe you want to generate (e.g., 'a low-carb chicken curry')");
+    if (!apiKey) {
+        alert("API Key missing. Please open settings ⚙️ and add your Gemini Key.");
+        toggleSettings();
+        return;
+    }
+
+    const loadingEl = document.getElementById('loading');
+    loadingEl.classList.remove('hidden');
+    loadingEl.innerText = "Chef is creatively generating your recipe...";
+
+    try {
+        // Phase 1: AI Processing (Generation Prompt)
+        let prompt = `You are a creative executive chef.
+        Generate a new recipe based on the user's description and preferences, outputting ONLY JSON: { "title": "String", "ingredients": ["String"], "steps": ["String"] }.
+        
+        STRICT RULES:
+        1. CREATIVITY: Invent a unique title and coherent steps/ingredients.
+        2. JSON ONLY. No markdown, no conversation.
+        `;
+
+        // Prepend custom rules to the prompt if they exist
+        if (customRules) {
+            prompt = `
+            # USER-DEFINED SYSTEM CONSTRAINTS
+            Apply these rules to your generation:
+            ${customRules}
+            
+            ---
+            
+            ${prompt}
+            `
+        }
+
+        prompt += `
+        USER DESCRIPTION: ${input}
+        `;
+
+        const recipeData = await _callGeminiAPI(prompt);
+        
+        // --- VALIDATION CHECK ---
+        if(recipeData.error) {
+            alert("AI Error: " + recipeData.error);
+            return;
+        } else if (!recipeData.title || recipeData.ingredients.length === 0) {
+            alert("Generation Failed: AI couldn't create a valid recipe structure.");
+            return; 
+        } 
+        
+        // Success Path 
+        recipeData.id = Date.now();
+        recipeData.isFavorite = false;
+        recipes.unshift(recipeData);
+        saveRecipes();
+        render();
+        document.getElementById('rawInput').value = '';
+
+    } catch (e) {
+        alert("Error: " + e.message);
+        console.error(e);
+    } finally {
+        loadingEl.classList.add('hidden');
+    }
+}
+
 
 // --- RENDER ENGINE ---
 function render() {
@@ -315,3 +400,18 @@ function importData(input) {
 function saveRecipes() {
     localStorage.setItem('gourmet_recipes', JSON.stringify(recipes));
 }
+
+// Expose internal functions for HTML binding
+window.cook = cook;
+window.generateRecipe = generateRecipe;
+window.toggleSettings = toggleSettings;
+window.saveKey = saveKey;
+window.saveRules = saveRules; // Expose new function
+window.exportData = exportData;
+window.importData = importData;
+window.openEditor = openEditor;
+window.saveEditor = saveEditor;
+window.closeModal = closeModal;
+window.toggleFavoriteCurrent = toggleFavoriteCurrent;
+window.deleteCurrentRecipe = deleteCurrentRecipe;
+window.copyToClipboard = copyToClipboard;
