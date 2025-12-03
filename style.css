@@ -200,7 +200,6 @@ button.github-btn {
 .swipe-overlay svg {
     width: 2rem;
     height: 2rem;
-    stroke: white; /* FIX: Explicitly set stroke to white for high contrast */
 }
 
 .swipe-delete {
