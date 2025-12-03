@@ -35,7 +35,7 @@
             <input type="file" id="importFile" style="display:none" onchange="importData(this)">
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
         
         <button class="secondary github-btn" onclick="window.open('https://github.com/Raw-JSON/0FluffCook/issues', '_blank')">
             🐞 Report Issue / View GitHub
@@ -66,8 +66,9 @@
         </div>
 
         <div class="action-row" style="margin-bottom: 20px;">
-            <button class="secondary icon-btn" onclick="toggleFavoriteCurrent()">❤️</button>
+            <button class="secondary icon-btn" onclick="toggleFavoriteCurrent()">❤️ Favorite</button>
             <button class="secondary icon-btn" onclick="copyToClipboard()">📋 Copy</button>
+            <button class="secondary icon-btn" onclick="shareRecipe()">📤 Share</button>
             <button class="secondary icon-btn" onclick="editCurrentRecipe()">✏️ Edit</button>
         </div>
 
@@ -81,7 +82,7 @@
         </div>
 
         <div class="modal-actions">
-            <button class="secondary" style="background: #3a1c1c; color: #ff6b6b;" onclick="deleteCurrentRecipe()">Delete Recipe</button>
+            <button class="secondary" style="background: var(--delete); color: var(--text);" onclick="deleteCurrentRecipe()">Delete Recipe</button>
         </div>
     </div>
 </div>
