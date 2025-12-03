@@ -257,6 +257,18 @@ function render() {
     const list = document.getElementById('recipeList');
     list.innerHTML = '';
     
+    // SVG Icons (minimal, efficient, "0Fluff")
+    const deleteIcon = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.643a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.475-.386M12 21.75V4.688m0-3.75h-.008L9.288 3.51a.75.75 0 00-.736-.367H5.625a.75.75 0 00-.735.632L4.04 6.75m14.456 0a48.108 48.108 0 00-3.475-.386M12 21.75V4.688m0-3.75h-.008L9.288 3.51a.75.75 0 00-.736-.367H5.625a.75.75 0 00-.735.632L4.04 6.75M12 3.75h.008l2.712-.862a.75.75 0 00.736.367h3.637c.22 0 .415.134.485.346l1.042 3.125m-6.183-3.048c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.643a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.475-.386M12 21.75V4.688m0-3.75h.008l2.712-.862a.75.75 0 00.736.367h3.637c.22 0 .415.134.485.346l1.042 3.125" />
+        </svg>
+    `;
+    const favoriteIcon = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.053-4.312 2.687-.63-1.634-2.292-2.687-4.312-2.687-2.589 0-4.688 2.015-4.688 4.5 0 1.937 1.137 3.63 2.827 4.717l7.712 5.564a.75.75 0 00.954 0l7.71-5.564c1.69-1.087 2.827-2.78 2.827-4.717z" />
+        </svg>
+    `;
+
     // Sort: Favorites first, then Newest
     const sorted = [...recipes].sort((a, b) => {
         if (a.isFavorite === b.isFavorite) return b.id - a.id;
@@ -268,8 +280,8 @@ function render() {
         card.className = `recipe-card ${r.isFavorite ? 'favorite' : ''}`;
         card.setAttribute('data-id', r.id); // Set the ID for swiping
         card.innerHTML = `
-            <div class="swipe-overlay swipe-delete">🗑️</div>
-            <div class="swipe-overlay swipe-favorite">❤️</div>
+            <div class="swipe-overlay swipe-delete">${deleteIcon}</div>
+            <div class="swipe-overlay swipe-favorite">${favoriteIcon}</div>
             <div class="card-content">
                 <div class="fav-icon">${r.isFavorite ? '❤️' : '♡'}</div>
                 <div class="recipe-title">${r.title}</div>
