@@ -1,16 +1,21 @@
-// 0FluffCook V3.5 Final Logic - DOMParser Fix
+// 0FluffCook V4.0 Logic - Swiping & Share
 
 // --- STATE MANAGEMENT ---
 let recipes = JSON.parse(localStorage.getItem('gourmet_recipes') || '[]');
 let apiKey = localStorage.getItem('gourmet_key') || '';
-let customRules = localStorage.getItem('gourmet_rules') || ''; // NEW STATE VARIABLE
+let customRules = localStorage.getItem('gourmet_rules') || ''; 
 let currentRecipeId = null;
 let isEditingId = null;
+
+// --- SWIPE GESTURE STATE ---
+let touchStartX = 0;
+let touchStartY = 0;
+const SWIPE_THRESHOLD = 80;
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     if(apiKey) document.getElementById('apiKeyInput').value = apiKey;
-    if(customRules) document.getElementById('customRulesInput').value = customRules; // LOAD RULES
+    if(customRules) document.getElementById('customRulesInput').value = customRules; 
     render();
 });
 
@@ -261,19 +266,115 @@ function render() {
     sorted.forEach(r => {
         const card = document.createElement('div');
         card.className = `recipe-card ${r.isFavorite ? 'favorite' : ''}`;
+        card.setAttribute('data-id', r.id); // Set the ID for swiping
         card.innerHTML = `
-            <div class="fav-icon">${r.isFavorite ? '❤️' : '♡'}</div>
-            <div class="recipe-title">${r.title}</div>
-            <div class="tags">
-                <span>🍽 ${r.ingredients.length} ingredients</span>
+            <div class="swipe-overlay swipe-delete">DELETE</div>
+            <div class="swipe-overlay swipe-favorite">FAVORITE</div>
+            <div class="card-content">
+                <div class="fav-icon">${r.isFavorite ? '❤️' : '♡'}</div>
+                <div class="recipe-title">${r.title}</div>
+                <div class="tags">
+                    <span>🍽 ${r.ingredients.length} ingredients</span>
+                </div>
             </div>
         `;
+
+        // Attach touch/click handlers to the card itself
         card.onclick = (e) => {
+            // Prevent opening modal if a swipe was just performed
+            if (e.target.closest('.recipe-card').classList.contains('swiping-active')) return;
             openModal(r);
         };
+        card.addEventListener('touchstart', handleTouchStart, { passive: true });
+        card.addEventListener('touchmove', handleTouchMove, { passive: true });
+        card.addEventListener('touchend', handleTouchEnd);
+
+
         list.appendChild(card);
     });
 }
+
+// --- SWIPE LOGIC ---
+function handleTouchStart(e) {
+    // Only process the first touch (for multi-touch devices)
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    
+    // Reset any existing transformation
+    const cardContent = this.querySelector('.card-content');
+    cardContent.style.transition = 'none';
+}
+
+function handleTouchMove(e) {
+    const dx = e.touches[0].clientX - touchStartX;
+    const dy = e.touches[0].clientY - touchStartY;
+    
+    // Check if it's mostly a horizontal swipe (prevents scroll-hijack)
+    if (Math.abs(dx) > Math.abs(dy) * 1.5) {
+        // e.preventDefault(); // Uncomment if you want to completely disable vertical scroll during swipe
+        const cardContent = this.querySelector('.card-content');
+        
+        // Clamp the swipe distance to prevent it from flying off screen
+        const maxOffset = 120; // Max visual offset
+        const offset = Math.min(Math.max(dx, -maxOffset), maxOffset);
+
+        cardContent.style.transform = `translateX(${offset}px)`;
+        this.classList.add('swiping-active');
+        
+        // Show/Hide overlays based on direction
+        this.querySelector('.swipe-delete').style.opacity = offset < 0 ? Math.abs(offset) / maxOffset : 0;
+        this.querySelector('.swipe-favorite').style.opacity = offset > 0 ? offset / maxOffset : 0;
+    }
+}
+
+function handleTouchEnd(e) {
+    const card = this;
+    const recipeId = parseInt(card.getAttribute('data-id'));
+    const cardContent = card.querySelector('.card-content');
+    const transformValue = cardContent.style.transform;
+    let dx = 0;
+    
+    // Extract the translateX value
+    if (transformValue) {
+        const match = transformValue.match(/translateX\(([^)]+)/);
+        if (match) {
+            dx = parseFloat(match[1]);
+        }
+    }
+
+    cardContent.style.transition = 'transform 0.3s ease-out';
+    card.classList.remove('swiping-active');
+
+    // --- Action Logic ---
+    if (dx > SWIPE_THRESHOLD) {
+        // Swipe Right: Favorite
+        toggleFavoriteById(recipeId);
+        cardContent.style.transform = 'translateX(100%)'; // Visual feedback
+        setTimeout(render, 300); // Re-render after animation
+    } else if (dx < -SWIPE_THRESHOLD) {
+        // Swipe Left: Delete
+        deleteRecipeById(recipeId);
+        cardContent.style.transform = 'translateX(-100%)'; // Visual feedback
+        setTimeout(render, 300); // Re-render after animation
+    } else {
+        // Snap back
+        cardContent.style.transform = 'translateX(0)';
+    }
+}
+
+function toggleFavoriteById(id) {
+    const r = recipes.find(i => i.id === id);
+    if(r) {
+        r.isFavorite = !r.isFavorite;
+        saveRecipes();
+    }
+}
+
+function deleteRecipeById(id) {
+    recipes = recipes.filter(r => r.id !== id);
+    saveRecipes();
+}
+
 
 // --- MODAL & ACTIONS ---
 function openModal(r) {
@@ -289,19 +390,14 @@ function closeModal(id) {
 }
 
 function toggleFavoriteCurrent() {
-    const r = recipes.find(i => i.id === currentRecipeId);
-    if(r) {
-        r.isFavorite = !r.isFavorite;
-        saveRecipes();
-        render();
-        closeModal('recipeModal');
-    }
+    toggleFavoriteById(currentRecipeId);
+    render();
+    closeModal('recipeModal');
 }
 
 function deleteCurrentRecipe() {
     if(confirm("Delete this recipe permanently?")) {
-        recipes = recipes.filter(r => r.id !== currentRecipeId);
-        saveRecipes();
+        deleteRecipeById(currentRecipeId);
         render();
         closeModal('recipeModal');
     }
@@ -313,6 +409,24 @@ function copyToClipboard() {
     const text = `${r.title}\n\nINGREDIENTS:\n${r.ingredients.join('\n')}\n\nSTEPS:\n${r.steps.join('\n')}`;
     navigator.clipboard.writeText(text).then(() => alert("Recipe copied to clipboard!"));
 }
+
+function shareRecipe() {
+    const r = recipes.find(i => i.id === currentRecipeId);
+    if (!r) return;
+
+    const shareText = `${r.title}\n\nINGREDIENTS:\n${r.ingredients.join('\n')}\n\nSTEPS:\n${r.steps.join('\n')}`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: r.title,
+            text: shareText
+        }).catch((error) => console.error('Error sharing', error));
+    } else {
+        copyToClipboard();
+        alert("Share API not available. Recipe copied to clipboard instead!");
+    }
+}
+
 
 // --- EDITOR LOGIC ---
 function openEditor() {
@@ -334,6 +448,10 @@ function openEditor() {
         document.getElementById('editSteps').value = '';
     }
     document.getElementById('editorModal').classList.add('active');
+}
+
+function editCurrentRecipe() {
+    openEditor();
 }
 
 function saveEditor() {
@@ -405,12 +523,14 @@ window.cook = cook;
 window.generateRecipe = generateRecipe;
 window.toggleSettings = toggleSettings;
 window.saveKey = saveKey;
-window.saveRules = saveRules; // Expose new function
+window.saveRules = saveRules; 
 window.exportData = exportData;
 window.importData = importData;
 window.openEditor = openEditor;
+window.editCurrentRecipe = editCurrentRecipe; // Exposed
 window.saveEditor = saveEditor;
 window.closeModal = closeModal;
 window.toggleFavoriteCurrent = toggleFavoriteCurrent;
 window.deleteCurrentRecipe = deleteCurrentRecipe;
-window.copyToClipboard = copyToClipboard
+window.copyToClipboard = copyToClipboard;
+window.shareRecipe = shareRecipe; // Exposed
