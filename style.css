@@ -193,25 +193,27 @@ button.github-btn {
     z-index: 5;
     opacity: 0; /* Hidden by default, controlled by JS opacity */
     transition: background-color 0.2s;
-    /* FIX: Doubled padding to pull icon further in from the edges */
     padding: 0 60px; 
 }
 
-/* SVG Icon Styling */
-.swipe-overlay svg {
-    width: 2rem;
-    height: 2rem;
+/* FIX: New styling for the emoji icons */
+.swipe-overlay > * {
+    /* Create a high-contrast background frame for the emoji */
+    background: white;
+    color: black; /* Emoji color contrast */
+    padding: 6px 8px; 
+    border-radius: 8px;
+    font-size: 1.4rem; /* Make the emoji bigger */
+    line-height: 1;
 }
 
 .swipe-delete {
     background-color: var(--delete);
-    /* Revert to side anchoring, now with more padding */
     justify-content: flex-end;
 }
 
 .swipe-favorite {
     background-color: var(--favorite-bg);
-    /* Revert to side anchoring, now with more padding */
     justify-content: flex-start;
 }
 
