@@ -8,19 +8,27 @@ A lightweight, privacy-focused utility that **Extracts** recipes from messy text
 
 ---
 
-## ✅ V4.0 Major Release: Chef Mode is Live
+## ✅ V4.1.0 Major Release: UX Overhaul & Swiping
 
-This release introduces **Chef Mode**, transforming the tool into a dual-purpose culinary assistant. You can now use AI to generate recipes based on simple prompts (like "Orange Chicken") or ingredient lists, all while honoring your persistent, saved dietary rules.
+This release transforms the user experience from functional to fluid, focusing on speed and native mobile interaction.
 
-## 🚀 Core Features
+### 🚀 Core Features
 
-* **100% Client-Side:** Zero servers, zero user tracking. All data is saved securely in your browser's local storage.
-* **PWA Ready:** Install the app to your desktop or mobile home screen for an instant-loading, offline-capable experience.
-* **AI Smart Parse:** Uses Gemini 2.5 Flash to intelligently filter noise, format measurements, and structure messy text/URLs into clean JSON.
+* **UI/UX Refresh:** The entire application interface has been updated for a sleeker, darker, and more modern look (OLED Aesthetic).
+* **Mobile Gesture Support:** Recipes now support **swipe-to-action** (Swipe Right to **Favorite**, Swipe Left to **Delete**), massively accelerating list management.
+* **New Utility: Share Function:** Added native mobile sharing support to quickly export clean recipe text.
 * **Chef Mode (Generate):** Instantly create new recipes using natural language prompts and constraints.
-* **Persistent Rules:** Save custom constraints (e.g., "No spicy food," "must be low-carb") directly in the app settings, which the AI will enforce for all generated recipes.
-* **Full Data Control:** Features include Favorites, Manual Editor, and full Backup/Restore functionality (JSON export).
-* **OLED Aesthetic:** Built with a sleek, dark-mode focused UI.
+* **AI Smart Parse:** Uses Gemini 2.5 Flash to intelligently filter noise and structure text into clean JSON.
+* **Persistent Rules:** Save custom constraints (e.g., "No spicy food," "must be low-carb") that the AI will enforce for all generated recipes.
+* **100% Client-Side:** Zero servers, zero user tracking. All data is saved securely in your browser's local storage.
+
+---
+
+## ⚠️ Known Issues
+
+* **Swipe Icon Feedback:** The visual feedback for the swipe actions needs polishing. The **Delete** side currently shows a strong red background but the icon visibility is poor, and the **Favorite** icon on the swipe overlay appears off-center or styled incorrectly. This is scheduled for the next minor release.
+
+---
 
 ## 🔑 Setup (Bring Your Own Key)
 
