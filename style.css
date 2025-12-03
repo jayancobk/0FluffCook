@@ -194,6 +194,7 @@ button.github-btn {
     opacity: 0; /* Hidden by default, controlled by JS opacity */
     transition: background-color 0.2s;
     padding: 0 20px;
+    font-size: 2rem; /* Ensure icons are large and clear */
 }
 
 .swipe-delete {
