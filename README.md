@@ -32,8 +32,8 @@ This release stabilizes the new mobile gesture controls and improves component v
 
 ### ✨ v4.1.0 Major Release (UX Overhaul)
 
-* UI/UX Refresh and Mobile Gesture Support implemented.
-* New Share Function added.
+* Comprehensive UI/UX Refresh and Mobile Gesture Support implemented.
+* Core integration of the Share Function for easy export.
 
 ---
 
