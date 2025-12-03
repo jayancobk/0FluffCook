@@ -193,8 +193,14 @@ button.github-btn {
     z-index: 5;
     opacity: 0; /* Hidden by default, controlled by JS opacity */
     transition: background-color 0.2s;
-    padding: 0 20px;
-    font-size: 2rem; /* Ensure icons are large and clear */
+    padding: 0 30px; /* Increased padding to give icons room */
+}
+
+/* SVG Icon Styling */
+.swipe-overlay svg {
+    width: 2rem;
+    height: 2rem;
+    stroke: var(--text);
 }
 
 .swipe-delete {
