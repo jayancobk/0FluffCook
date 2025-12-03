@@ -268,8 +268,8 @@ function render() {
         card.className = `recipe-card ${r.isFavorite ? 'favorite' : ''}`;
         card.setAttribute('data-id', r.id); // Set the ID for swiping
         card.innerHTML = `
-            <div class="swipe-overlay swipe-delete">DELETE</div>
-            <div class="swipe-overlay swipe-favorite">FAVORITE</div>
+            <div class="swipe-overlay swipe-delete">🗑️</div>
+            <div class="swipe-overlay swipe-favorite">❤️</div>
             <div class="card-content">
                 <div class="fav-icon">${r.isFavorite ? '❤️' : '♡'}</div>
                 <div class="recipe-title">${r.title}</div>
@@ -347,15 +347,30 @@ function handleTouchEnd(e) {
 
     // --- Action Logic ---
     if (dx > SWIPE_THRESHOLD) {
-        // Swipe Right: Favorite
-        toggleFavoriteById(recipeId);
-        cardContent.style.transform = 'translateX(100%)'; // Visual feedback
-        setTimeout(render, 300); // Re-render after animation
+        // Swipe Right: Favorite/Unfavorite
+        const updatedRecipe = toggleFavoriteById(recipeId);
+
+        // Visual feedback based on new state
+        if (updatedRecipe.isFavorite) {
+             cardContent.style.transform = 'translateX(100%)'; // Swipe out right
+        } else {
+             cardContent.style.transform = 'translateX(0)'; // Snap back if unfavorited
+        }
+        
+        // Wait for the visual transition to complete, then re-render
+        setTimeout(() => {
+            render();
+        }, 300);
+
     } else if (dx < -SWIPE_THRESHOLD) {
         // Swipe Left: Delete
         deleteRecipeById(recipeId);
-        cardContent.style.transform = 'translateX(-100%)'; // Visual feedback
-        setTimeout(render, 300); // Re-render after animation
+        cardContent.style.transform = 'translateX(-100%)'; // Swipe out left
+        
+        // Wait for the visual transition to complete, then re-render
+        setTimeout(() => {
+            render();
+        }, 300);
     } else {
         // Snap back
         cardContent.style.transform = 'translateX(0)';
@@ -367,7 +382,9 @@ function toggleFavoriteById(id) {
     if(r) {
         r.isFavorite = !r.isFavorite;
         saveRecipes();
+        return r; // Return the updated recipe
     }
+    return null;
 }
 
 function deleteRecipeById(id) {
@@ -527,10 +544,10 @@ window.saveRules = saveRules;
 window.exportData = exportData;
 window.importData = importData;
 window.openEditor = openEditor;
-window.editCurrentRecipe = editCurrentRecipe; // Exposed
+window.editCurrentRecipe = editCurrentRecipe; 
 window.saveEditor = saveEditor;
 window.closeModal = closeModal;
 window.toggleFavoriteCurrent = toggleFavoriteCurrent;
 window.deleteCurrentRecipe = deleteCurrentRecipe;
 window.copyToClipboard = copyToClipboard;
-window.shareRecipe = shareRecipe; // Exposed
+window.shareRecipe = shareRecipe;
